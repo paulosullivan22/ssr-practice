@@ -1,15 +1,15 @@
 import express from 'express'
-import React from 'react'
-import { renderToString } from 'react-dom/server'
 
-import Home from './client/components/Home'
+import renderer from './helpers/renderer'
 
 const app = express()
 
-app.get('/', (req, res) => {
-    const content = renderToString(<Home />)
+// Use public directory as a static directory, publicly available
+// Which is used in html script tag below
+app.use(express.static('public'))
 
-    res.send(content)
+app.get('/', (req, res) => {
+    res.send(renderer())
 })
 
 app.listen(3000, () => {
