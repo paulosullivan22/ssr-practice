@@ -8,8 +8,8 @@ const app = express()
 // Which is used in html script tag below
 app.use(express.static('public'))
 
-app.get('/', (req, res) => {
-    res.send(renderer())
+app.get('*', (req, res) => {
+    res.send(renderer(req))
 })
 
 app.listen(3000, () => {
