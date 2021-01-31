@@ -92,6 +92,14 @@ var _express = __webpack_require__(4);
 
 var _express2 = _interopRequireDefault(_express);
 
+__webpack_require__(17);
+
+var _reactRouterConfig = __webpack_require__(18);
+
+var _Routes = __webpack_require__(14);
+
+var _Routes2 = _interopRequireDefault(_Routes);
+
 var _createStore = __webpack_require__(5);
 
 var _createStore2 = _interopRequireDefault(_createStore);
@@ -111,9 +119,16 @@ app.use(_express2.default.static('public'));
 app.get('*', function (req, res) {
     var store = (0, _createStore2.default)();
 
-    // Initialize and load data into store
+    // Take incoming request and figure out what components should be rendered
+    var promises = (0, _reactRouterConfig.matchRoutes)(_Routes2.default, req.path).map(function (_ref) {
+        var route = _ref.route;
 
-    res.send((0, _renderer2.default)(req, store));
+        return route.loadData ? route.loadData(store) : null;
+    });
+
+    Promise.all(promises).then(function () {
+        res.send((0, _renderer2.default)(req, store));
+    });
 });
 
 app.listen(3000, function () {
@@ -291,6 +306,8 @@ var _reactRouterDom = __webpack_require__(2);
 
 var _reactRedux = __webpack_require__(13);
 
+var _reactRouterConfig = __webpack_require__(18);
+
 var _Routes = __webpack_require__(14);
 
 var _Routes2 = _interopRequireDefault(_Routes);
@@ -304,7 +321,11 @@ exports.default = function (req, store) {
         _react2.default.createElement(
             _reactRouterDom.StaticRouter,
             { location: req.path, context: {} },
-            _react2.default.createElement(_Routes2.default, null)
+            _react2.default.createElement(
+                'div',
+                null,
+                (0, _reactRouterConfig.renderRoutes)(_Routes2.default)
+            )
         )
     ));
 
@@ -338,21 +359,26 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactRouterDom = __webpack_require__(2);
-
 var _Home = __webpack_require__(15);
 
 var _Home2 = _interopRequireDefault(_Home);
 
+var _UsersList = __webpack_require__(16);
+
+var _UsersList2 = _interopRequireDefault(_UsersList);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = function () {
-    return _react2.default.createElement(
-        'div',
-        null,
-        _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/', component: _Home2.default })
-    );
-};
+exports.default = [{
+    path: '/',
+    component: _Home2.default,
+    exact: true
+}, {
+    path: '/users',
+    component: _UsersList2.default,
+    exact: true,
+    loadData: _UsersList.loadData
+}];
 
 /***/ }),
 /* 15 */
@@ -391,6 +417,103 @@ var Home = function Home() {
 };
 
 exports.default = Home;
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.loadData = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(0);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactRedux = __webpack_require__(13);
+
+var _actions = __webpack_require__(9);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var UsersList = function (_PureComponent) {
+    _inherits(UsersList, _PureComponent);
+
+    function UsersList() {
+        _classCallCheck(this, UsersList);
+
+        return _possibleConstructorReturn(this, (UsersList.__proto__ || Object.getPrototypeOf(UsersList)).apply(this, arguments));
+    }
+
+    _createClass(UsersList, [{
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            this.props.fetchUsers();
+        }
+    }, {
+        key: 'renderUsers',
+        value: function renderUsers() {
+            return this.props.users.map(function (user) {
+                return _react2.default.createElement(
+                    'li',
+                    { key: user.id },
+                    user.name
+                );
+            });
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            return _react2.default.createElement(
+                'div',
+                null,
+                'Here\'s a big list of users:',
+                _react2.default.createElement(
+                    'ul',
+                    null,
+                    this.renderUsers()
+                )
+            );
+        }
+    }]);
+
+    return UsersList;
+}(_react.PureComponent);
+
+function mapStateToProps(state) {
+    return { users: state.users };
+}
+
+function loadData(store) {
+    return store.dispatch((0, _actions.fetchUsers)());
+}
+
+exports.loadData = loadData;
+exports.default = (0, _reactRedux.connect)(mapStateToProps, { fetchUsers: _actions.fetchUsers })(UsersList);
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports) {
+
+module.exports = require("babel-polyfill");
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+module.exports = require("react-router-config");
 
 /***/ })
 /******/ ]);
