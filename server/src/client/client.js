@@ -1,4 +1,5 @@
 // Starter point for client app
+import axios from 'axios'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { BrowserRouter } from "react-router-dom";
@@ -11,7 +12,12 @@ import { renderRoutes } from "react-router-config";
 import reducers from './reducers'
 import Routes from './Routes'
 
-const store = createStore(reducers, window.INIITAL_STATE, applyMiddleware(thunk))
+// Creates separate axios instances for client and server with different baseURLs
+const axiosInstance = axios.create({
+    baseURL: '/api'
+})
+
+const store = createStore(reducers, window.INIITAL_STATE, applyMiddleware(thunk.withExtraArgument(axiosInstance)))
 
 // Hydrating application
 ReactDOM.hydrate(

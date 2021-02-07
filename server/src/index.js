@@ -13,7 +13,7 @@ const app = express()
 app.use('/api', proxy('http://react-srr-api.herokuapp.com', {
     // Only used for this specific api, not normally required
     proxyReqOptDecorator(opts) {
-        opts.header['x-forwarded-host'] = 'localhost:3000'
+        opts.headers['x-forwarded-host'] = 'localhost:3000'
         return opts
     }
 }))
@@ -21,8 +21,14 @@ app.use('/api', proxy('http://react-srr-api.herokuapp.com', {
 // Which is used in html script tag below
 app.use(express.static('public'))
 
+app.get('/api/users', (req, res) => {
+    console.log("HERE")
+
+    res.send({ message: 'hello'})
+})
+
 app.get('*', (req, res) => {
-    const store = createStore()
+    const store = createStore(req)
 
     // Take incoming request and figure out what components should be rendered
     const promises = matchRoutes(Routes, req.path).map(({ route }) => {
