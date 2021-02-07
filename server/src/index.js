@@ -1,6 +1,7 @@
 import express from 'express'
 import 'babel-polyfill'
 import { matchRoutes } from "react-router-config";
+import proxy from 'express-http-proxy'
 
 import Routes from "./client/Routes";
 import createStore from "./helpers/createStore";
@@ -8,6 +9,14 @@ import renderer from './helpers/renderer'
 
 const app = express()
 
+// Proxy API for auth
+app.use('/api', proxy('http://react-srr-api.herokuapp.com', {
+    // Only used for this specific api, not normally required
+    proxyReqOptDecorator(opts) {
+        opts.header['x-forwarded-host'] = 'localhost:3000'
+        return opts
+    }
+}))
 // Use public directory as a static directory, publicly available
 // Which is used in html script tag below
 app.use(express.static('public'))
