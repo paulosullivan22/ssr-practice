@@ -10,22 +10,11 @@ import renderer from './helpers/renderer'
 const app = express()
 
 // Proxy API for auth
-app.use('/api', proxy('http://react-srr-api.herokuapp.com', {
-    // Only used for this specific api, not normally required
-    proxyReqOptDecorator(opts) {
-        opts.headers['x-forwarded-host'] = 'localhost:3000'
-        return opts
-    }
-}))
+app.use('/api', proxy('http://react-srr-api.herokuapp.com'))
+
 // Use public directory as a static directory, publicly available
 // Which is used in html script tag below
 app.use(express.static('public'))
-
-app.get('/api/users', (req, res) => {
-    console.log("HERE")
-
-    res.send({ message: 'hello'})
-})
 
 app.get('*', (req, res) => {
     const store = createStore(req)
